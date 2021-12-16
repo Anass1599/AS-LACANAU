@@ -1,0 +1,9 @@
+{# je utilise l'héritage de twig pour
+restituer le contenu du bloc parent (base.html.twig #}
+{% extends "admin/admin.base.html.twig" %}
+
+{% block metatitle %}{{ parent()}}Accueil{% endblock %}
+
+{% block main %}
+
+{% endblock main %}
