@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Repository\ArticleRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 class HomeController extends AbstractController
@@ -14,7 +15,7 @@ class HomeController extends AbstractController
      * est la page d'accueil.
      * Ma route va appeler la méthode home, car l'annotation
      * est placée au dessus de la méthode
-     * @Route("/home" name="home")
+     * @Route("/home", name="home")
      */
 
     public function home(ArticleRepository $articleRepository)
@@ -31,5 +32,24 @@ class HomeController extends AbstractController
         //et aussi ma variable .
         return $this->render("home.html.twig", ["articles" => $articles]);
     }
+
+    /**
+     * @Route("/admin/search", name="search_articles")
+     */
+    //je demande à symfony de instancier un objet de la classe Request, et la class BookRepository.
+    public function searchArticles(ArticleRepository $articleRepository, Request $request)
+    {
+        // je récupère ce que tu l'utilisateur a recherché grâce à la classe Request
+        $search = $request->query->get('search');
+
+
+        // je fais ma requête en BDD grâce à la méthode que j'ai créée searchByTitle
+        $articles = $articleRepository->searchByTitle($search);
+
+        return $this->render("articles_search.html.twig", ['articles' => $articles]);
+
+    }
+
+
 
 }

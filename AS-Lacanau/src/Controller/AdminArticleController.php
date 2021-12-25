@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Article;
 use App\Form\ArticleType;
+use App\Repository\ArticleRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,9 +17,10 @@ class AdminArticleController extends AbstractController
     /**
      * @Route("/admin/home", name="admin_home")
      */
-    public function adminHome()
+    public function adminHome(ArticleRepository $articleRepository)
     {
-        return $this->render("admin/home.html.twig");
+        $articles = $articleRepository->findAll();
+        return $this->render("admin/home.html.twig",["articles" => $articles]);
     }
 
     /**
@@ -87,6 +89,73 @@ class AdminArticleController extends AbstractController
 
 
         return $this->render("admin/article_create.html.twig", ['form' => $form->createView()]);
+
+    }
+
+    /**
+     * @Route("/admin/article/update/{id}", name="admin_article_update")
+     */
+    public function updateArticle($id, ArticleRepository $articleRepository, Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger)
+    {
+        // j'utilise la méthode find de la classe BookRepository
+        // pour récupérer un livre de la table book avec $id recupere de l'url.
+        $Article = $articleRepository->find($id);
+        $form = $this->createForm(ArticleType::class, $Article);
+        $form->handleRequest($request);
+
+        if($form->isSubmitted() && $form->isValid())
+        {
+            // gestion de l'upload d'image
+            // 1) récupérer le fichier uploadé
+            $coverFile = $form->get('coverFilenam')->getData();
+
+            if ($coverFile) {
+                // 2) récupérer le nom du fichier uploadé
+                $originalFilename = pathinfo($coverFile->getClientOriginalName(), PATHINFO_FILENAME);
+
+                // 3) renommer le fichier avec un nom unique
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$coverFile->guessExtension();
+
+                // 4) déplacer le fichier dans le dossier publique
+                $coverFile->move(
+                    $this->getParameter('cover_directory'),
+                    $newFilename
+                );
+
+                // 5) enregistrer le nom du fichier dans la colonne coverFilename
+                $Article->setCoverFilenam($newFilename);
+            }
+            //puis J'enregisttre l'instance de la classe Article (l'entité) en BDD avec les methode
+            // de la class EntityManagerInterface.
+            $entityManager->persist($Article);
+            $entityManager->flush();
+
+            $this->addFlash('success', "L'article a bien été modifier!");
+            return $this->redirectToRoute('admin_home');
+
+        }
+
+        return $this->render("admin/article_update.html.twig", ['form' => $form->createView(), 'article' => $Article]);
+
+    }
+
+    /**
+     * @Route("/admin/article/delete/{id}", name="admin_article_delete")
+     */
+    public function deleteArticle($id, ArticleRepository $articleRepository, EntityManagerInterface $entityManager)
+    {
+        // j'utilise la méthode find de la classe ArticleRepository
+        // pour récupérer un livre de la table book avec $id recupere de l'url.
+        $article = $articleRepository->find($id);
+
+        //je utilise les methode remove() et flush pour préparer et executer
+        //la suppression de l'instance de la classe Book (l'entité) en BDD.
+        $entityManager->remove($article);
+        $entityManager->flush();
+
+        $this->addFlash('success', "L'article a bien été supprimer !");
+        return $this->redirectToRoute("admin_home");
 
     }
 }

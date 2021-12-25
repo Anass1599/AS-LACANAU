@@ -8,6 +8,16 @@ restituer le contenu du bloc parent (base.html.twig #}
 
 {% block main %}
 
+    <section>
+        <article>
+            <div class="img">
+                <a href=""><img class="article_img" src="{{ asset('uploads/cover/'~article.coverFilenam)  }}"></a>
+            </div>
+            <h5>{{ article.title }}</h5>
+            <h5>{{ article.publishdAt|date("m/d/Y") }}</h5>
+        </article>
+    </section>
+
     {{ form_start(form) }}
 
         <div class="form-style-9">

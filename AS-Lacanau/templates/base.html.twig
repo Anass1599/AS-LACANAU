@@ -55,9 +55,9 @@ Cette page est vulgairement mon gabarit.-->
                         </ul>
                     </li>
                 </ul>
-                <form class="d-flex mx-5 ">
-                    <input class="form-control me-2" type="search" placeholder="Effectuez une recherche"
-                           aria-label="Search">
+                <form class="d-flex mx-5 " action="{{ path('search_articles') }}">
+                    <input class="form-control me-2" type="text" placeholder="Effectuez une recherche"
+                           aria-label="Search" name="search">
                     <button class="btn btn-outline-light me-2" type="submit">Rechercher</button>
                     <button class="btn btn-outline-light me-2 col-4 " type="submit">SE CONNECTER</button>
                 </form>
